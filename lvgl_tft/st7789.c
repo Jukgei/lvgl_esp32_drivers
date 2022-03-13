@@ -221,3 +221,33 @@ static void st7789_set_orientation(uint8_t orientation)
     st7789_send_cmd(ST7789_MADCTL);
     st7789_send_data((void *) &data[orientation], 1);
 }
+
+void st7789_sleep_in()
+{
+    st7789_send_cmd(ST7789_SLPIN);
+    printf("st7789 lcd sleep in\n");
+}
+
+void st7789_sleep_out()
+{
+    st7789_send_cmd(ST7789_SLPOUT);
+}
+
+void st7789_enable_backlight(bool backlight)
+{
+#if ST7789_ENABLE_BACKLIGHT_CONTROL
+    printf("%s backlight.\n", backlight ? "Enabling" : "Disabling");
+    uint32_t tmp = 0;
+
+#if (ST7789_BCKL_ACTIVE_LVL==1)
+    tmp = backlight ? 1 : 0;
+#else
+    tmp = backlight ? 0 : 1;
+#endif
+
+    gpio_set_level(ST7789_BCKL, tmp);
+#endif
+}
+
+
+

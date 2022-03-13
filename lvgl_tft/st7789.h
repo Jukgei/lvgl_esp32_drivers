@@ -115,6 +115,9 @@ void st7789_flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_m
 
 void st7789_send_cmd(uint8_t cmd);
 void st7789_send_data(void *data, uint16_t length);
+void st7789_sleep_in();
+void st7789_sleep_out();
+void st7789_enable_backlight(bool backlight);
 
 #ifdef __cplusplus
 } /* extern "C" */

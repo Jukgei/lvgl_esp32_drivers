@@ -140,3 +140,8 @@ void disp_driver_set_px(lv_disp_drv_t * disp_drv, uint8_t * buf, lv_coord_t buf_
     uc8151d_lv_set_fb_cb(disp_drv, buf, buf_w, x, y, color, opa);
 #endif
 }
+
+void disp_driver_sleep_in(){
+    st7789_sleep_in();
+}
+
