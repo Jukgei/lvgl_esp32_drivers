@@ -24,6 +24,10 @@ extern "C" { /* extern "C" */
  */
 typedef void * disp_backlight_h;
 
+typedef struct {
+    bool pwm_control; // true: LEDC is used, false: GPIO is used
+    int index;        // Either GPIO or LEDC channel
+} disp_backlight_t;
 /**
  * @brief Configuration structure of backlight controller
  *

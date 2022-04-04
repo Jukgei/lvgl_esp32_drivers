@@ -12,10 +12,7 @@
 #include "esp_log.h"
 #include "soc/ledc_periph.h" // to invert LEDC output on IDF version < v4.3
 
-typedef struct {
-    bool pwm_control; // true: LEDC is used, false: GPIO is used
-    int index;        // Either GPIO or LEDC channel
-} disp_backlight_t;
+
 
 static const char *TAG = "disp_backlight";
 

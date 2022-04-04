@@ -92,7 +92,7 @@ extern "C" {
 void lvgl_i2c_locking(void* leader);
 
 /* Initialize detected SPI and I2C bus and devices */
-void lvgl_driver_init(void);
+void * lvgl_driver_init(void);
 
 /* Initialize SPI master  */
 bool lvgl_spi_driver_init(int host, int miso_pin, int mosi_pin, int sclk_pin,
