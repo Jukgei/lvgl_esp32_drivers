@@ -116,6 +116,7 @@ void * lvgl_driver_init(void)
 
 /* Touch controller initialization */
 #if CONFIG_LV_TOUCH_CONTROLLER != TOUCH_CONTROLLER_NONE
+    printf("BEFORE CALL TOUCH DRIVER INIT222n");
     #if defined (CONFIG_LV_TOUCH_DRIVER_PROTOCOL_SPI)
         ESP_LOGI(TAG, "Initializing SPI master for touch");
 
@@ -128,6 +129,7 @@ void * lvgl_driver_init(void)
 
         touch_driver_init();
     #elif defined (CONFIG_LV_I2C_TOUCH)
+        printf("BEFORE CALL TOUCH DRIVER INIT111\n");
         touch_driver_init();
     #elif defined (CONFIG_LV_TOUCH_DRIVER_ADC)
         touch_driver_init();
@@ -137,6 +139,9 @@ void * lvgl_driver_init(void)
     #error "No protocol defined for touch controller"
     #endif
 #else
+    printf("BEFORE CALL TOUCH DRIVER INIT333\n");
+    touch_driver_init();
+    printf("BEFORE CALL TOUCH DRIVER INIT444\n");
 #endif
     return bckl_handle;
 }

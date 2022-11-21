@@ -62,6 +62,10 @@ void st7789_init(void)
         {ST7789_VCMOFSET, {0x35, 0x3E}, 2},
         {ST7789_CABCCTRL, {0xBE}, 1},
         {ST7789_MADCTL, {0x00}, 1}, // Set to 0x28 if your display is flipped
+        // {0x33, {0x00, 0x14, 0x01, 0x17, 0x00, 0x14}, 6},
+#if LV_VER_RES_MAX == 280
+        {0x37, {0x00, 0x2C}, 2},
+#endif
         {ST7789_COLMOD, {0x55}, 1},
 
 #if ST7789_INVERT_COLORS == 1
@@ -75,14 +79,81 @@ void st7789_init(void)
         {ST7789_GAMSET, {0x01}, 1},
         {ST7789_PVGAMCTRL, {0xD0, 0x00, 0x02, 0x07, 0x0A, 0x28, 0x32, 0x44, 0x42, 0x06, 0x0E, 0x12, 0x14, 0x17}, 14},
         {ST7789_NVGAMCTRL, {0xD0, 0x00, 0x02, 0x07, 0x0A, 0x28, 0x31, 0x54, 0x47, 0x0E, 0x1C, 0x17, 0x1B, 0x1E}, 14},
+
+        {0xE4, {0x25, 0x00, 0x00}, 3}, 
+
         {ST7789_CASET, {0x00, 0x00, 0x00, 0xEF}, 4},
         {ST7789_RASET, {0x00, 0x00, 0x01, 0x3f}, 4},
+        // {ST7789_RASET, {0x00, 0x14, 0x01, 0x2b}, 4},
         {ST7789_RAMWR, {0}, 0},
         {ST7789_GCTRL, {0x07}, 1},
         {0xB6, {0x0A, 0x82, 0x27, 0x00}, 4},
         {ST7789_SLPOUT, {0}, 0x80},
         {ST7789_DISPON, {0}, 0x80},
         {0, {0}, 0xff},
+
+
+        /*my code driver1*/
+        // {ST7789_SLPOUT, {0}, 0x80},
+        // {ST7789_MADCTL, {0x00}, 1}, // Set to 0x28 if your display is flipped
+
+        // {ST7789_COLMOD, {0x05}, 1},
+        // {0xB2, {0x1F,0x1F, 0x00, 0x33, 0x33},5},
+        // {ST7789_GCTRL, {0x00}, 1},
+        // {0xBB, {0x36}, 1},
+        // {0xC2, {0x01}, 1},
+        // {0xC3, {0x13}, 1},
+        // {0xC4, {0x20}, 1},
+        // {0xC6, {0x13}, 1},
+        // {0xD6, {0xA1}, 1},
+        // {0xD0, {0xA4, 0xA1}, 2},
+
+        // {0x2A, {0x00, 0x00, 0x00, 0xEF}, 4},
+        // {0x2B, {0x00, 0x00, 0x00, 0xEF}, 4},
+
+        // {0xE0, {0xF0, 0x08, 0x0E, 0x09, 0x08, 0x04, 0x2F, 0x33, 0x45, 0x36, 0x13, 0x12, 0x2A, 0x2D}, 14},
+        // {0xE1, {0xF0, 0x0E, 0x12, 0x0C, 0x0A, 0x15, 0x2E, 0x32, 0x44, 0x39, 0x17, 0x18, 0x2B, 0x2F}, 14},
+
+        // {0xE4, {0x1D, 0x00, 0x00}, 3}, 
+
+        // {0x21, {0x29}, 1},
+
+        // {0xc7, {0x04}, 1},
+
+        // {0xcc, {0x18}, 1},
+
+        /*my code driver2*/
+        // {0x11, {0}, 0},
+        // {0x36, {0x00}, 1},
+
+        // {0x3A, {0x06}, 1},
+        // {0xB2, {0x0B, 0x0B, 0x00, 0x33, 0x33}, 5},
+        // {0xB7, {0x11}, 1},
+        // {0xBB, {0x2F}, 1},
+        // {0xC2, {0x01}, 1}, 
+        // {0xC3, {0x0D}, 1}, 
+        // {0xC4, {0x20}, 1},
+        // {0xC6, {0x13}, 1},
+        // {0xD0, {0xA4, 0xA1}, 2},
+        // {0xD6, {0xA1}, 1},
+
+        // {0xE0, {0xF0, 0x04, 0x07, 0x09, 0x07, 0x13, 0x25, 0x33, 0x3C, 0x34, 0x10, 0x10, 0x29, 0x32}, 14},
+
+        // {0xE1, {0xF0, 0x05, 0x08, 0x0A, 0x09, 0x05, 0x25, 0x32, 0x3B, 0x3B, 0x17, 0x18, 0x2E, 0x37}, 14},
+
+        // {0xE4, {0x25, 0x00, 0x00}, 3}, 
+
+        // {0x21, {0}, 0}, 
+
+        // {0x29, {0}, 0},
+
+        // {0x2A, {0x00, 0x00, 0x00, 0xEF}, 4}, 
+
+        // {0x2B, {0x00, 0x14, 0x01, 0x2B}, 4}, 
+
+        // {0x2c, {0}, 0},
+
+
     };
 
     //Initialize non-SPI GPIOs
@@ -93,14 +164,16 @@ void st7789_init(void)
     gpio_pad_select_gpio(ST7789_RST);
     gpio_set_direction(ST7789_RST, GPIO_MODE_OUTPUT);
 #endif
-
+    
     //Reset the display
 #if !defined(ST7789_SOFT_RST)
+    printf("Not defined ST7789_SOFT_RST\n");
     gpio_set_level(ST7789_RST, 0);
     vTaskDelay(100 / portTICK_RATE_MS);
     gpio_set_level(ST7789_RST, 1);
     vTaskDelay(100 / portTICK_RATE_MS);
 #else
+    printf("Defined ST7789_SOFT_RST\n");
     st7789_send_cmd(ST7789_SWRESET);
 #endif
 
@@ -118,6 +191,7 @@ void st7789_init(void)
     }
 
     st7789_set_orientation(CONFIG_LV_DISPLAY_ORIENTATION);
+    printf("ALL command send done!\n");
 }
 
 /* The ST7789 display controller can drive 320*240 displays, when using a 240*240
@@ -147,6 +221,12 @@ void st7789_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
     offsety2 += 80;
 #endif
 #endif
+    // offsety1 += 40;
+    // offsety2 += 40;
+
+    // offsety1 = 319;
+    // offsety2 = 280;
+    printf("offsetx1: %d, offsetx2: %d, offsety1: %d, offsety2: %d\n", offsetx1, offsetx2, offsety1, offsety2);
 
     /*Column addresses*/
     st7789_send_cmd(ST7789_CASET);
@@ -154,6 +234,7 @@ void st7789_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
     data[1] = offsetx1 & 0xFF;
     data[2] = (offsetx2 >> 8) & 0xFF;
     data[3] = offsetx2 & 0xFF;
+    printf("CASET 0x%x, 0x%x, 0x%x, 0x%x\n", data[0], data[1], data[2], data[3]);
     st7789_send_data(data, 4);
 
     /*Page addresses*/
@@ -162,6 +243,7 @@ void st7789_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
     data[1] = offsety1 & 0xFF;
     data[2] = (offsety2 >> 8) & 0xFF;
     data[3] = offsety2 & 0xFF;
+    printf("RASET 0x%x, 0x%x, 0x%x, 0x%x\n", data[0], data[1], data[2], data[3]);
     st7789_send_data(data, 4);
 
     /*Memory write*/
@@ -200,7 +282,6 @@ static void st7789_send_color(void * data, size_t length)
 static void st7789_set_orientation(uint8_t orientation)
 {
     // ESP_ASSERT(orientation < 4);
-
     const char *orientation_str[] = {
         "PORTRAIT", "PORTRAIT_INVERTED", "LANDSCAPE", "LANDSCAPE_INVERTED"
     };
@@ -219,6 +300,7 @@ static void st7789_set_orientation(uint8_t orientation)
     ESP_LOGI(TAG, "0x36 command value: 0x%02X", data[orientation]);
 
     st7789_send_cmd(ST7789_MADCTL);
+    printf("0x36 command value: 0x%02X\n", data[orientation]);
     st7789_send_data((void *) &data[orientation], 1);
 }
 

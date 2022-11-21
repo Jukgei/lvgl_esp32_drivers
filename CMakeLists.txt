@@ -51,32 +51,33 @@ if(CONFIG_LV_TFT_DISPLAY_PROTOCOL_SPI)
 endif()
 
 # Add touch driver to compilation only if it is selected in menuconfig
-if(CONFIG_LV_TOUCH_CONTROLLER)
-    list(APPEND SOURCES "lvgl_touch/touch_driver.c")
-    list(APPEND LVGL_INCLUDE_DIRS lvgl_touch)
+list(APPEND SOURCES "lvgl_touch/touch_driver.c")
+list(APPEND LVGL_INCLUDE_DIRS lvgl_touch)
 
-    # Include only the source file of the selected
-    # touch controller.
-    if(CONFIG_LV_TOUCH_CONTROLLER_XPT2046)
-        list(APPEND SOURCES "lvgl_touch/xpt2046.c")
-    elseif(CONFIG_LV_TOUCH_CONTROLLER_FT6X06)
-        list(APPEND SOURCES "lvgl_touch/ft6x36.c")
-    elseif(CONFIG_LV_TOUCH_CONTROLLER_STMPE610)
-        list(APPEND SOURCES "lvgl_touch/stmpe610.c")
-    elseif(CONFIG_LV_TOUCH_CONTROLLER_ADCRAW)
-        list(APPEND SOURCES "lvgl_touch/adcraw.c")
-    elseif(CONFIG_LV_TOUCH_CONTROLLER_FT81X)
-        list(APPEND SOURCES "lvgl_touch/FT81x.c")
-    elseif(CONFIG_LV_TOUCH_CONTROLLER_RA8875)
-        list(APPEND SOURCES "lvgl_touch/ra8875_touch.c")
-    elseif(CONFIG_LV_TOUCH_CONTROLLER_GT911)
-        list(APPEND SOURCES "lvgl_touch/gt911.c")
-    endif()
-
-    if(CONFIG_LV_TOUCH_DRIVER_PROTOCOL_SPI)
-        list(APPEND SOURCES "lvgl_touch/tp_spi.c")
-    endif()
+# Include only the source file of the selected
+# touch controller.
+if(CONFIG_LV_TOUCH_CONTROLLER_XPT2046)
+    list(APPEND SOURCES "lvgl_touch/xpt2046.c")
+elseif(CONFIG_LV_TOUCH_CONTROLLER_FT6X06)
+    list(APPEND SOURCES "lvgl_touch/ft6x36.c")
+elseif(CONFIG_LV_TOUCH_CONTROLLER_STMPE610)
+    list(APPEND SOURCES "lvgl_touch/stmpe610.c")
+elseif(CONFIG_LV_TOUCH_CONTROLLER_ADCRAW)
+    list(APPEND SOURCES "lvgl_touch/adcraw.c")
+elseif(CONFIG_LV_TOUCH_CONTROLLER_FT81X)
+    list(APPEND SOURCES "lvgl_touch/FT81x.c")
+elseif(CONFIG_LV_TOUCH_CONTROLLER_RA8875)
+    list(APPEND SOURCES "lvgl_touch/ra8875_touch.c")
+elseif(CONFIG_LV_TOUCH_CONTROLLER_GT911)
+    list(APPEND SOURCES "lvgl_touch/gt911.c")
+elseif(CONFIG_LV_TOUCH_CONTROLLER_CST816T)
+    list(APPEND SOURCES "lvgl_touch/CST816.c")
 endif()
+
+if(CONFIG_LV_TOUCH_DRIVER_PROTOCOL_SPI)
+    list(APPEND SOURCES "lvgl_touch/tp_spi.c")
+endif()
+
 
 if(CONFIG_LV_I2C)
     list(APPEND SOURCES "lvgl_i2c/i2c_manager.c")

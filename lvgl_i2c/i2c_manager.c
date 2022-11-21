@@ -127,7 +127,6 @@ esp_err_t I2C_FN(_init)(i2c_port_t port) {
 	esp_err_t ret = ESP_OK;
 
 	if (I2C_FN(_mutex)[port] == 0) {
-
 		ESP_LOGI(TAG, "Starting I2C master at port %d.", (int)port);
 
 		I2C_FN(_mutex)[port] = xSemaphoreCreateMutex();
@@ -137,14 +136,13 @@ esp_err_t I2C_FN(_init)(i2c_port_t port) {
 		#ifdef HAS_CLK_FLAGS
 			conf.clk_flags = 0;
 		#endif
-
 		#if defined (I2C_ZERO)
 			if (port == I2C_NUM_0) {
 				conf.sda_io_num = CONFIG_I2C_MANAGER_0_SDA;
 				conf.scl_io_num = CONFIG_I2C_MANAGER_0_SCL;
 				conf.sda_pullup_en = I2C_MANAGER_0_PULLUPS ? GPIO_PULLUP_ENABLE : GPIO_PULLUP_DISABLE;
 				conf.scl_pullup_en = conf.sda_pullup_en;
-				conf.master.clk_speed = CONFIG_I2C_MANAGER_0_FREQ_HZ;
+				conf.master.clk_speed = 50000;
 			}
 		#endif
 
@@ -154,7 +152,7 @@ esp_err_t I2C_FN(_init)(i2c_port_t port) {
 				conf.scl_io_num = CONFIG_I2C_MANAGER_1_SCL;
 				conf.sda_pullup_en = I2C_MANAGER_1_PULLUPS ? GPIO_PULLUP_ENABLE : GPIO_PULLUP_DISABLE;
 				conf.scl_pullup_en = conf.sda_pullup_en;
-				conf.master.clk_speed = CONFIG_I2C_MANAGER_1_FREQ_HZ;
+				conf.master.clk_speed = 50000;
 			}
 		#endif
 
@@ -164,10 +162,13 @@ esp_err_t I2C_FN(_init)(i2c_port_t port) {
 		ret |= i2c_driver_install(port, conf.mode, 0, 0, 0);
 
 		if (ret != ESP_OK) {
+			printf("Failed to initialise I2C port %d. ret %d\n", (int)port, ret);
 			ESP_LOGE(TAG, "Failed to initialise I2C port %d.", (int)port);
 			ESP_LOGW(TAG, "If it was already open, we'll use it with whatever settings were used "
 			              "to open it. See I2C Manager README for details.");
 		} else {
+			printf("Initialised port %d (SDA: %d, SCL: %d, speed: %d Hz.)",
+					 port, conf.sda_io_num, conf.scl_io_num, conf.master.clk_speed);
 			ESP_LOGI(TAG, "Initialised port %d (SDA: %d, SCL: %d, speed: %d Hz.)",
 					 port, conf.sda_io_num, conf.scl_io_num, conf.master.clk_speed);
 		}
@@ -184,6 +185,7 @@ esp_err_t I2C_FN(_read)(i2c_port_t port, uint16_t addr, uint32_t reg, uint8_t *b
     esp_err_t result;
 
     // May seem weird, but init starts with a check if it's needed, no need for that check twice.
+	printf("read i2c\n");
 	I2C_FN(_init)(port);
 
    	ESP_LOGV(TAG, "Reading port %d, addr 0x%03x, reg 0x%04x", port, addr, reg);
@@ -201,19 +203,102 @@ esp_err_t I2C_FN(_read)(i2c_port_t port, uint16_t addr, uint32_t reg, uint8_t *b
 	#endif
 
 	if (I2C_FN(_lock)((int)port) == ESP_OK) {
+		printf("lock OK 0x%x, 0x%x, timeout %d\n", addr, reg, timeout);
 		i2c_cmd_handle_t cmd = i2c_cmd_link_create();
 		if (!(reg & I2C_NO_REG)) {
+			printf("I2C have REG\n");
 			/* When reading specific register set the addr pointer first. */
 			i2c_master_start(cmd);
 			i2c_send_address(cmd, addr, I2C_MASTER_WRITE);
 			i2c_send_register(cmd, reg);
 		}
 		/* Read size bytes from the current pointer. */
-		i2c_master_start(cmd);
+		// i2c_master_start(cmd);
 		i2c_send_address(cmd, addr, I2C_MASTER_READ);
 		i2c_master_read(cmd, buffer, size, I2C_MASTER_LAST_NACK);
 		i2c_master_stop(cmd);
 		result = i2c_master_cmd_begin(port, cmd, timeout);
+		i2c_cmd_link_delete(cmd);
+		I2C_FN(_unlock)((int)port);
+	} else {
+		printf("lock not OK\n");
+		ESP_LOGE(TAG, "Lock could not be obtained for port %d.", (int)port);
+		return ESP_ERR_TIMEOUT;
+	}
+
+    if (result != ESP_OK) {
+		printf("Error: %d", result);
+    	ESP_LOGW(TAG, "Error: %d", result);
+    }
+
+	ESP_LOG_BUFFER_HEX_LEVEL(TAG, buffer, size, ESP_LOG_VERBOSE);
+
+    return result;
+}
+
+
+esp_err_t i2c_cst_read(i2c_port_t port, uint8_t reg, uint8_t *buffer, uint16_t size) {
+
+	I2C_PORT_CHECK(port, ESP_FAIL);
+
+    esp_err_t result;
+
+    // May seem weird, but init starts with a check if it's needed, no need for that check twice.
+	printf("read i2c\n");
+	I2C_FN(_init)(port);
+
+   	ESP_LOGV(TAG, "Reading port %d, reg 0x%04x", port, reg);
+
+	TickType_t timeout = 0;
+	#if defined (I2C_ZERO)
+		if (port == I2C_NUM_0) {
+			timeout = I2C_MANAGER_0_TIMEOUT;
+		}
+	#endif
+	#if defined (I2C_ONE)
+		if (port == I2C_NUM_1) {
+			timeout = I2C_MANAGER_1_TIMEOUT;
+		}
+	#endif
+
+	if (I2C_FN(_lock)((int)port) == ESP_OK) {
+		// printf("lock OK 0x%x, timeout %d\n", reg, timeout);
+		i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+
+
+		i2c_ack_type_t last_nack = I2C_MASTER_LAST_NACK;
+		result = i2c_master_start(cmd);
+		printf("Error1: %d", result);
+		// result = i2c_master_write_byte(cmd, 0x2A, I2C_MASTER_ACK);
+		// printf("Error2: %d", result);
+		// result = i2c_master_write_byte(cmd, reg, I2C_MASTER_ACK);
+		// printf("Error3: %d", result);
+		// result = i2c_master_start(cmd);
+		// printf("Error4: %d", result);
+		// result = i2c_master_write_byte(cmd, 0x2B, I2C_MASTER_ACK);
+		// printf("Error5: %d", result);
+		// result = i2c_master_read(cmd, buffer, size, I2C_MASTER_LAST_NACK);
+		// printf("Error6: %d", result);
+		result = i2c_master_stop(cmd);
+		printf("Error7: %d", result);
+		result = i2c_master_cmd_begin(port, cmd, portMAX_DELAY);
+		printf("Error8: %d", result);
+
+		// if (!(reg & I2C_NO_REG)) {
+		// 	printf("I2C have REG\n");
+		// 	/* When reading specific register set the addr pointer first. */
+		// 	i2c_master_start(cmd);
+		// 	i2c_send_address(cmd, addr, I2C_MASTER_WRITE);
+		// 	i2c_send_register(cmd, reg);
+		// }
+		// /* Read size bytes from the current pointer. */
+		// // i2c_master_start(cmd);
+		// i2c_send_address(cmd, addr, I2C_MASTER_READ);
+		// i2c_master_read(cmd, buffer, size, I2C_MASTER_LAST_NACK);
+		// i2c_master_stop(cmd);
+		// result = i2c_master_cmd_begin(port, cmd, timeout);
+
+
 		i2c_cmd_link_delete(cmd);
 		I2C_FN(_unlock)((int)port);
 	} else {
@@ -222,6 +307,7 @@ esp_err_t I2C_FN(_read)(i2c_port_t port, uint16_t addr, uint32_t reg, uint8_t *b
 	}
 
     if (result != ESP_OK) {
+		printf("Error: %d", result);
     	ESP_LOGW(TAG, "Error: %d", result);
     }
 

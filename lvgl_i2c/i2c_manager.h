@@ -50,6 +50,8 @@ esp_err_t I2C_FN(_lock)(i2c_port_t port);
 esp_err_t I2C_FN(_unlock)(i2c_port_t port);
 esp_err_t I2C_FN(_force_unlock)(i2c_port_t port);
 
+esp_err_t i2c_cst_read(i2c_port_t port, uint8_t reg, uint8_t *buffer, uint16_t size);
+
 
 #ifdef I2C_OEM
 
